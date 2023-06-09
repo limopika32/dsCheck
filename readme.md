@@ -20,5 +20,4 @@ pip install pygame nfcpy
 
 
 ***
-> nakanolab による NFC対応学生証による出席確認ツール のソースを利用しています。
-> https://github.com/nakanolab/nfc-attendance
+> nakanolab による [NFC対応学生証による出席確認ツール](https://github.com/nakanolab/nfc-attendance) のソースを利用しています。
