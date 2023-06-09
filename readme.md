@@ -1,9 +1,11 @@
 # dsCheck
 金沢工業大学 電子計算機研究会用の出席管理システム
 
-:::note warn
-pip による `pygame nfcpy` のライブラリインストールが必要です。
-:::
+:warning: pip による `pygame nfcpy` のライブラリインストールが必要です。
+```
+python -m pip install pygame nfcpy
+pip install pygame nfcpy
+```
 
 ## ファイル
 + `list.csv` に名簿 `{学籍番号,名前}` を予め登録してください。
@@ -19,4 +21,4 @@ pip による `pygame nfcpy` のライブラリインストールが必要です
 
 ***
 > nakanolab による NFC対応学生証による出席確認ツール のソースを利用しています。
-> > https://github.com/nakanolab/nfc-attendance
+> https://github.com/nakanolab/nfc-attendance
