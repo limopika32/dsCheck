@@ -11,7 +11,7 @@ from csv import writer as wtr
 from os import path as pt
 
 tx_title="電算研出席"
-tx_ver="v1.08"
+tx_ver="v1.10"
 
 gray="#444444"
 white="#ffffff"
@@ -21,13 +21,12 @@ warn="#807500"
 ftal="#cc0000"
 
 # flag [main,]
-FLAG=[True]
+FLAG=[True]; KEYST=""
 N_UPD=set(); D_UPD=set(); E_UPD=set(); A_NUM=0;
 RPTNUM=[0,0]; EXT=[dict()]
 
 class mCardReader(object):
     def on_connect(self, tag):
-        global A_NUM
         #touched
         stat_update(info,"読み込み中...","\uf16a")
 
@@ -39,28 +38,7 @@ class mCardReader(object):
             data = tag.read_without_encryption([sc], [bc])
 
             stid = data.decode('utf-8').lstrip('0').rstrip()[:-2]
-            if stid in EXT[0]:
-                if stid in N_UPD or stid in D_UPD:
-                    mplay("snd/special.mp3")
-                    stat_update(warn,"{} さん 既に出席済みです".format(EXT[0][stid]),"\ue762")
-                elif stid in E_UPD:
-                    mplay("snd/great.mp3")
-                    stat_update(great,"{} さん 出席に変更しました".format(EXT[0][stid]),"\ue10b")
-                    N_UPD.add(stid)
-                else:
-                    mplay("snd/great.mp3")
-                    stat_update(great,"{} さん こんにちは".format(EXT[0][stid]),"\ue10b")
-                    N_UPD.add(stid)
-                    A_NUM += 1
-            else:
-                if RPTNUM[1]:
-                    mplay("snd/fatal.mp3")
-                    stat_update(ftal,"[E20] {} さん 未登録者です".format(stid),"\uee57")
-                else:
-                    mplay("snd/great.mp3")
-                    stat_update(great,"{} さん こんにちは".format(stid),"\ue10b")
-                    N_UPD.add(stid)
-                
+            post(stid)
 
         except AttributeError:
             mplay("snd/warn2.mp3")
@@ -88,10 +66,13 @@ class mCardReader(object):
 
 #tkinterを起動
 root = tk.Tk()
-#タイトルの設定
-root.title((tx_title,tx_ver))
+ctrl = tk.Toplevel()
+#title setting
+root.title(tx_title+" "+tx_ver)
+ctrl.title(tx_title+" 10キー")
 #画面サイズの指定
 root.geometry("520x640")
+ctrl.geometry("520x640")
 #音の設定
 mx.init(frequency= 44100)
 
@@ -106,6 +87,30 @@ def readNFC():
 
 def slp(time):
 	sleep(time if FLAG[0] else 0)
+        
+def post(stid):
+    global A_NUM
+    if stid in EXT[0]:
+        if stid in N_UPD or stid in D_UPD:
+            mplay("snd/special.mp3")
+            stat_update(warn,"{} さん 既に出席済みです".format(EXT[0][stid]),"\ue762")
+        elif stid in E_UPD:
+            mplay("snd/great.mp3")
+            stat_update(great,"{} さん 出席に変更しました".format(EXT[0][stid]),"\ue10b")
+            N_UPD.add(stid)
+        else:
+            mplay("snd/great.mp3")
+            stat_update(great,"{} さん こんにちは".format(EXT[0][stid]),"\ue10b")
+            N_UPD.add(stid)
+            A_NUM += 1
+    else:
+        if RPTNUM[1]:
+            mplay("snd/fatal.mp3")
+            stat_update(ftal,"[E20] {} さん 未登録者です".format(stid),"\uee57")
+        else:
+            mplay("snd/great.mp3")
+            stat_update(great,"{} さん こんにちは".format(stid),"\ue10b")
+            N_UPD.add(stid)
 
 def upload():
     global A_NUM
@@ -186,6 +191,8 @@ def alway_update():
     RPTNUM[0]=len(D_UPD)
     dateS.config(text=dt.now().strftime('%Y/%m/%d %H:%M:%S'))
     upldSR.config(text="{}/{} ({}/{})".format(A_NUM,RPTNUM[1]-len(E_UPD),RPTNUM[0],RPTNUM[1]))
+
+    if ctrl != None and not(ctrl.winfo_exists()): root.destroy()
     root.after(100,alway_update)
 
 def stat_update(color,mes,icon):
@@ -198,6 +205,42 @@ def stat_update(color,mes,icon):
 def upld_update(p1):
 	if not(FLAG[0]) : return
 	upldSL.config(text=p1)
+
+def ckey(p1):
+    global KEYST
+    if p1 == 12:
+        if KEYST == "":
+            mplay("snd/note3.mp3")
+            sstatS.config(text="No text")
+        else:
+            if KEYST[0] == "*":
+                pass
+            else:
+                post(KEYST)
+
+        mplay("snd/note2.mp3")
+        sstatS.config(text="Posted")
+        KEYST = ""
+        cbtn[9].config(text="*",bg=info)
+    
+    elif p1 == 10:
+        if KEYST == "":
+            KEYST = "*"
+            mplay("snd/note1.mp3")
+            cbtn[9].config(text="x",bg=ftal)
+            sstatS.config(text=KEYST)
+        else:
+            KEYST = ""
+            mplay("snd/note3.mp3")
+            cbtn[9].config(text="*",bg=info)
+            sstatS.config(text="Cleared")
+
+    else:
+        KEYST += str(p1)
+        mplay("snd/note1.mp3")
+        cbtn[9].config(text="x",bg=ftal)
+        sstatS.config(text=KEYST)
+
 
 titleF = tk.Frame(root)
 titleF.pack(fill=tk.X)
@@ -248,6 +291,33 @@ mainS = tk.Label(mainF,text="\uf16a",
     fg=white,bg=info,
 )
 mainS.pack(expand=True)
+
+
+sstatF = tk.Frame(ctrl)
+sstatF.pack(side=tk.TOP)
+sbase = tk.Frame(ctrl)
+sbase.pack(fill=tk.BOTH,expand=True)
+
+sstatS=tk.Label(sstatF,text="Ready",
+                font=("Segoe UI","18"))
+sstatS.pack(fill=tk.X,expand=True)
+
+#? https://docs.python.org/ja/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result
+cbtn = [tk.Button(sbase,text=i) for i in range(12)]
+for r in range(4):
+    for c in range(3):
+        n = 3*r+c
+        cbtn[n].grid(row=r,column=c,sticky=tk.NSEW)
+        cbtn[n].config(text=(n+1),
+            font=("Century Gothic",48),
+            fg=white,bg=info,command=lambda x=n+1:ckey(x),
+            activeforeground=white,activebackground=gray)
+        sbase.grid_columnconfigure(c,weight=1)
+    sbase.grid_rowconfigure(r,weight=1)
+
+cbtn[9].config(text="*")
+cbtn[10].config(text="0",command=lambda: ckey(0))
+cbtn[11].config(text="E",bg=great)
 
 # NFC start
 thr1 = th(target=readNFC)
