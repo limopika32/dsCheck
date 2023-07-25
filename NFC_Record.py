@@ -217,9 +217,9 @@ def ckey(p1):
                 pass
             else:
                 post(KEYST)
-
-        mplay("snd/note2.mp3")
-        sstatS.config(text="Posted")
+            mplay("snd/note2.mp3")
+            sstatS.config(text="Posted")
+        
         KEYST = ""
         cbtn[9].config(text="*",bg=info)
     
