@@ -18,6 +18,9 @@ pip install pygame nfcpy
 3. ウィンドウを閉じると出席を締め切り、無断欠席者の集計が `absent_XXXX.log` (`XXXX`は年月) に記録されます。
 4. 間違えてウィンドウを閉じて終了した後でも、再度 1. からやり直すことで出席確認を再開することが出来ます。
 
+## ライセンス (LICENCE)
+このリポジトリは [MITライセンス](./LICENSE) に準拠しています。<br>
+Released under the [MIT license.](./LICENSE)
 
 ***
 > nakanolab による [NFC対応学生証による出席確認ツール](https://github.com/nakanolab/nfc-attendance) のソースを利用しています。
